@@ -11,12 +11,22 @@ topics:
 
   topic2:
     filters:
-      and:
+      - and:
         - key: "event"
           value: "error"
         - key: "priority"
           value: "high"
-          format: "High priority alert: {{message}}"
+          format: "High priority error: {{error}}"
+      - and:
+        - key: "event"
+          value: "error"
+        - key: "priority"
+          value: "low"
+          format: "Low priority error: {{error}}"
+      - or:
+        - key "event"
+          value: "log"
+          format: "LOG: {{message}}"    
     format: "{{raw_message}}"
 
   topic3:
