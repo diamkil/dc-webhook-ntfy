@@ -61,9 +61,20 @@ def format_message(data, template_str):
     data['raw_message'] = json.dumps(data)  # Add the raw message to the data
     message = template_str
 
+    # Regular expression to match if condition syntax, e.g., {{if list_key: [<content>]}}
+    if_pattern = r"\{\{if\s+(\w+):\s*\[(.*?)\]\}\}"
+    if_conditions = re.findall(if_pattern, message)
+
+    # Process if conditions
+    for list_key, if_content in if_conditions:
+        if list_key in data and isinstance(data[list_key], list) and len(data[list_key]) > 0:
+            message = message.replace(f"{{{{if {list_key}: [{if_content}]}}}}", if_content)
+        else:
+            message = message.replace(f"{{{{if {list_key}: [{if_content}]}}}}", "")
+
     # Regular expression to match loop syntax, e.g., {{loop:item in items:[{{item.property}}]}}
     loop_pattern = r"\{\{loop:(\w+)\s+in\s+(\w+):\[(.*?)\]\}\}"
-    loops = re.findall(loop_pattern, template_str)
+    loops = re.findall(loop_pattern, message)
 
     # Process loop syntax
     for loop_var, list_key, loop_template in loops:
@@ -82,7 +93,10 @@ def format_message(data, template_str):
         placeholder = f"{{{{{key}}}}}"
         message = message.replace(placeholder, str(value))
 
-    return message
+    # Ensure that newlines are properly formatted for Markdown
+    message = message.replace("\n\n", "\n")  # Remove extra newlines
+
+    return message.strip()  # Strip leading and trailing whitespace
 
 @app.route('/webhook/<topic>', methods=['POST'])
 def webhook(topic):
