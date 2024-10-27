@@ -57,14 +57,15 @@ def check_filter(data, f):
         return True  # `key` exists, and no specific `value` to check, so it passes
     return False
 
-def format_message(data, format_str):
+def format_message(data, template_str):
     data['raw_message'] = json.dumps(data)  # Add the raw message to the data
-    message = format_str
-    
+    message = template_str
+
     # Regular expression to match loop syntax, e.g., {{loop:item in items:[{{item.property}}]}}
     loop_pattern = r"\{\{loop:(\w+)\s+in\s+(\w+):\[(.*?)\]\}\}"
-    loops = re.findall(loop_pattern, format_str)
+    loops = re.findall(loop_pattern, template_str)
 
+    # Process loop syntax
     for loop_var, list_key, loop_template in loops:
         if list_key in data and isinstance(data[list_key], list):
             formatted_items = []
@@ -76,11 +77,11 @@ def format_message(data, format_str):
             loop_result = "\n".join(formatted_items)
             message = message.replace(f"{{{{loop:{loop_var} in {list_key}:[{loop_template}]}}}}", loop_result)
 
-    # Replace other placeholders
+    # Replace remaining placeholders with single values
     for key, value in data.items():
         placeholder = f"{{{{{key}}}}}"
         message = message.replace(placeholder, str(value))
-    
+
     return message
 
 @app.route('/webhook/<topic>', methods=['POST'])
@@ -99,7 +100,10 @@ def webhook(topic):
 
     format_str = custom_format or topic_config.get('format', "{{raw_message}}")
     title_str = custom_title or topic_config.get('title', "")
+
+    # Format both the message and the title with dynamic data
     formatted_message = format_message(data, format_str)
+    formatted_title = format_message(data, title_str)
     logger.info(f"Formatted message for topic {topic}: {formatted_message}")
 
     # Send to ntfy
@@ -107,7 +111,7 @@ def webhook(topic):
     headers = {
         "Authorization": f"Bearer {API_KEY}",
         "Content-Type": "text/plain",
-        "Title": title_str
+        "Title": formatted_title
     }
     response = requests.post(ntfy_url, headers=headers, data=formatted_message)
     if response.status_code == 200:
