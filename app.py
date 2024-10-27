@@ -24,11 +24,13 @@ def apply_filters(data, filters):
         value = data
         for key in keys:
             value = value.get(key, None)
-            if value is None:
-                return False
-        if value != f['value']:
-            return False
-    return True
+            if value is None or value != f['value']:
+                continue
+            if 'discard' in f and f['discard']:
+                return False, None
+            if 'format' in f:
+                return True, f['format']
+    return True, None
 
 def format_message(data, format_str):
     data['raw_message'] = json.dumps(data)  # Add the raw message to the data
@@ -46,12 +48,14 @@ def webhook(topic):
 
     # Apply filters
     filters = topic_config.get('filters', [])
-    if not apply_filters(data, filters):
-        logger.warning(f"Filters not matched for topic {topic} with data: {data}")
-        return jsonify(success=False, message="Filters not matched")
+    matched, custom_format = apply_filters(data, filters)
 
-    # Format message
-    formatted_message = format_message(data, topic_config.get('format', '{{raw_message}}'))
+    if custom_format is None and not matched:
+        logger.info(f"Discarding message for topic {topic} based on filters: {data}")
+        return jsonify(success=False, message="Message discarded by filter")
+
+    format_str = custom_format or topic_config.get('format', "{{raw_message}}")
+    formatted_message = format_message(data, format_str)
     logger.info(f"Formatted message for topic {topic}: {formatted_message}")
 
     # Send to ntfy

@@ -1,18 +1,24 @@
 topics:
   topic1:
     filters:
-      - key: "details.important"
-        value: true
-      - key: "status.urgent"
-        value: "yes"
-    format: "Important Message from {{details.sender}}: {{details.message}}. Status: {{status.urgent}}"
+      - key: "event"
+        value: "error"
+        format: "Error occurred: {{error}}"
+      - key: "event"
+        value: "warning"
+        discard: true
+    format: "{{raw_message}}"
 
   topic2:
     filters:
-      - key: "priority.level"
+      - key: "priority"
         value: "high"
-    format: "High Priority Alert: {{details.message}} from {{details.sender}}"
+        format: "High priority alert: {{message}} from {{sender}}"
+    format: "{{raw_message}}"
 
   topic3:
-    filters: []  # No filters, allow all messages
-    format: "{{message}}"  # Raw formatting, just the message contents
+    filters:
+      - key: "priority"
+        value: "high"
+        format: "High priority alert: {{message}} from {{sender}}"
+    format: "{{raw_message}}"
