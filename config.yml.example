@@ -30,9 +30,13 @@ topics:
         - key_not_defined: "user"
           format: "Error occurred with no user defined: {{error}}"
       - or:
-        - key "event"
+        - key: "event"
           value: "log"
           format: "LOG: {{message}}"    
+        - key: "event"
+          value: "example"
+          # Loop over item variables following format between []
+          format: "{{loop:item in items:[Item: {{item.name}}, ID: {{item.id}}]}} \nSummary: {{summary}}
     format: "{{raw_message}}"
 
   topic3:

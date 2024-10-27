@@ -4,6 +4,7 @@ import yaml
 import os
 import logging
 import json
+import re
 
 app = Flask(__name__)
 API_KEY = os.getenv("NTFY_API_KEY")
@@ -57,9 +58,27 @@ def check_filter(data, f):
 def format_message(data, format_str):
     data['raw_message'] = json.dumps(data)  # Add the raw message to the data
     message = format_str
+    
+    # Regular expression to match loop syntax, e.g., {{loop:item in items:[{{item.property}}]}}
+    loop_pattern = r"\{\{loop:(\w+)\s+in\s+(\w+):\[(.*?)\]\}\}"
+    loops = re.findall(loop_pattern, format_str)
+
+    for loop_var, list_key, loop_template in loops:
+        if list_key in data and isinstance(data[list_key], list):
+            formatted_items = []
+            for item in data[list_key]:
+                item_message = loop_template
+                for key, value in item.items():
+                    item_message = item_message.replace(f"{{{{{loop_var}.{key}}}}}", str(value))
+                formatted_items.append(item_message)
+            loop_result = "\n".join(formatted_items)
+            message = message.replace(f"{{{{loop:{loop_var} in {list_key}:[{loop_template}]}}}}", loop_result)
+
+    # Replace other placeholders
     for key, value in data.items():
         placeholder = f"{{{{{key}}}}}"
         message = message.replace(placeholder, str(value))
+    
     return message
 
 @app.route('/webhook/<topic>', methods=['POST'])
