@@ -24,6 +24,11 @@ topics:
         - key: "priority"
           value: "low"
           format: "Low priority error: \n{{error}}"
+      - and:
+        - key: "event"
+          value: "error"
+        - key_not_defined: "user"
+          format: "Error occurred with no user defined: {{error}}"
       - or:
         - key "event"
           value: "log"
