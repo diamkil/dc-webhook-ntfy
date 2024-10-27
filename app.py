@@ -53,7 +53,7 @@ def extract_value(data, keys):
 @app.route('/webhook/<topic>', methods=['POST'])
 def webhook(topic):
     data = request.json
-    topic_config = config['topics'].get(topic, {})
+    topic_config = config['topics'].get(topic, {"filters": [], "format": "{{message}}"})
 
     # Apply filters
     filters = topic_config.get('filters', [])

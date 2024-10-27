@@ -12,3 +12,7 @@ topics:
       - key: "priority.level"
         value: "high"
     format: "High Priority Alert: {{details.message}} from {{details.sender}}"
+
+  topic3:
+    filters: []  # No filters, allow all messages
+    format: "{{message}}"  # Raw formatting, just the message contents
