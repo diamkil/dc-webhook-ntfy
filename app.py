@@ -59,7 +59,9 @@ def check_filter(data, f):
 
 def format_message(data, template_str):
     data['raw_message'] = json.dumps(data)  # Add the raw message to the data
-    message = template_str
+    
+    # Replace \n in the template string early on
+    message = template_str.replace('\\n', '\n')
 
     # Regular expression to match if condition syntax, e.g., {{if list_key: [<content>]}}
     if_pattern = r"\{\{if\s+(\w+):\s*\[(.*?)\]\}\}"
@@ -71,7 +73,7 @@ def format_message(data, template_str):
             message = message.replace(f"{{{{if {list_key}: [{if_content}]}}}}", if_content)
         else:
             message = message.replace(f"{{{{if {list_key}: [{if_content}]}}}}", "")
-
+    
     # Regular expression to match loop syntax, e.g., {{loop:item in items:[{{item.property}}]}}
     loop_pattern = r"\{\{loop:(\w+)\s+in\s+(\w+):\[(.*?)\]\}\}"
     loops = re.findall(loop_pattern, message)
