@@ -69,6 +69,7 @@ def webhook(topic):
 
     # Format message
     format_str = topic_config.get('format', "{{message}}")
+    data['message'] = data  # Map entire received data to 'message'
     message = format_message(data, format_str)
     logger.info(f"Formatted message for topic {topic}: {message}")
 
