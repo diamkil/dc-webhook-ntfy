@@ -42,18 +42,20 @@ def check_filter(data, f):
         for key in keys:
             value = value.get(key, None)
             if value is not None:
-                return False
-        return True
-    else:
+                return False  # Key is defined, so the condition fails
+        return True  # Key is not defined, so the condition passes
+    elif 'key' in f:
         keys = f['key'].split('.')
         value = data
         for key in keys:
             value = value.get(key, None)
-            if value is None or value != f['value']:
-                return False
-        if 'discard' in f and f['discard']:
-            return False  # Discard the message
-        return True
+            if value is None:
+                return False  # Key is not found, so the condition fails
+        # If `value` is not specified, accept any value as long as key exists
+        if 'value' in f:
+            return value == f['value']  # Compare only if `value` is specified
+        return True  # `key` exists, and no specific `value` to check, so it passes
+    return False
 
 def format_message(data, format_str):
     data['raw_message'] = json.dumps(data)  # Add the raw message to the data
