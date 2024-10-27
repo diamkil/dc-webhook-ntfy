@@ -16,7 +16,8 @@ topics:
           value: "error"
         - key: "priority"
           value: "high"
-          format: "High priority error: {{error}}"
+          format: "**High priority error**: {{error}}"
+          title: "High Priority Error"
       - and:
         - key: "event"
           value: "error"

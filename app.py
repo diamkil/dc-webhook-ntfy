@@ -23,12 +23,16 @@ def apply_filters(data, filters):
         if 'and' in condition:
             if all(check_filter(data, f) for f in condition['and']):
                 matched_filter = next((f for f in condition['and'] if 'format' in f), None)
-                return True, matched_filter.get('format') if matched_filter else None
+                format = matched_filter.get('format') if matched_filter else None
+                title = matched_filter.get('title', "")
+                return True, format, title
         if 'or' in condition:
             if any(check_filter(data, f) for f in condition['or']):
                 matched_filter = next(f for f in condition['or'] if check_filter(data, f))
-                return True, matched_filter.get('format', None)
-    return True, None
+                format = matched_filter.get('format', None)
+                title = matched_filter.get('title', "")
+                return True, format, title
+    return True, None, ""
 
 def check_filter(data, f):
     keys = f['key'].split('.')
@@ -53,17 +57,18 @@ def format_message(data, format_str):
 def webhook(topic):
     data = request.json
     logger.info(f"Received data for topic {topic}: {data}")
-    topic_config = config['topics'].get(topic, {"filters": [], "format": "{{raw_message}}"})
+    topic_config = config['topics'].get(topic, {"filters": [], "format": "{{raw_message}}", "title": ""})
 
     # Apply filters
     filters = topic_config.get('filters', [])
-    matched, custom_format = apply_filters(data, filters)
+    matched, custom_format, custom_title = apply_filters(data, filters)
 
-    if custom_format is None and not matched:
+    if not matched and custom_format is None:
         logger.info(f"Discarding message for topic {topic} based on filters: {data}")
         return jsonify(success=False, message="Message discarded by filter")
 
     format_str = custom_format or topic_config.get('format', "{{raw_message}}")
+    title_str = custom_title or topic_config.get('title', "")
     formatted_message = format_message(data, format_str)
     logger.info(f"Formatted message for topic {topic}: {formatted_message}")
 
@@ -71,9 +76,13 @@ def webhook(topic):
     ntfy_url = f"{NTFY_URL_BASE}/{topic}"
     headers = {
         "Authorization": f"Bearer {API_KEY}",
-        "Content-Type": "text/plain"
+        "Content-Type": "application/json"
     }
-    response = requests.post(ntfy_url, headers=headers, data=formatted_message)
+    payload = {
+        "title": title_str,
+        "message": formatted_message
+    }
+    response = requests.post(ntfy_url, headers=headers, json=payload)
     if response.status_code == 200:
         logger.info(f"Successfully sent message to ntfy topic {topic}")
         return jsonify(success=True)
