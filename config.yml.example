@@ -1,0 +1,14 @@
+topics:
+  topic1:
+    filters:
+      - key: "details.important"
+        value: true
+      - key: "status.urgent"
+        value: "yes"
+    format: "Important Message from {{details.sender}}: {{details.message}}. Status: {{status.urgent}}"
+
+  topic2:
+    filters:
+      - key: "priority.level"
+        value: "high"
+    format: "High Priority Alert: {{details.message}} from {{details.sender}}"
