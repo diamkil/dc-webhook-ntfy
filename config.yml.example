@@ -23,7 +23,7 @@ topics:
           value: "error"
         - key: "priority"
           value: "low"
-          format: "Low priority error: {{error}}"
+          format: "Low priority error: \n{{error}}"
       - or:
         - key "event"
           value: "log"

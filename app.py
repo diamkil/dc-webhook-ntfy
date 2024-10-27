@@ -76,13 +76,10 @@ def webhook(topic):
     ntfy_url = f"{NTFY_URL_BASE}/{topic}"
     headers = {
         "Authorization": f"Bearer {API_KEY}",
-        "Content-Type": "application/json"
+        "Content-Type": "text/plain",
+        "Title": title_str
     }
-    payload = {
-        "title": title_str,
-        "message": formatted_message
-    }
-    response = requests.post(ntfy_url, headers=headers, json=payload)
+    response = requests.post(ntfy_url, headers=headers, data=formatted_message)
     if response.status_code == 200:
         logger.info(f"Successfully sent message to ntfy topic {topic}")
         return jsonify(success=True)
