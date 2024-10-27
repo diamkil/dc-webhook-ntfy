@@ -93,9 +93,6 @@ def format_message(data, template_str):
         placeholder = f"{{{{{key}}}}}"
         message = message.replace(placeholder, str(value))
 
-    # Ensure that newlines are properly formatted for Markdown
-    message = message.replace("\n\n", "\n")  # Remove extra newlines
-
     return message.strip()  # Strip leading and trailing whitespace
 
 @app.route('/webhook/<topic>', methods=['POST'])
