@@ -59,7 +59,8 @@ def check_filter(data, f):
 
 def format_message(data, template_str):
     data['raw_message'] = json.dumps(data)  # Add the raw message to the data
-
+    message = template_str
+    
     # Regular expression to match if condition syntax, e.g., {{if list_key: [<content>]}}
     if_pattern = r"\{\{if\s+(\w+):\s*\[((?:[^\[\]]|\[(?:[^\[\]]|\[[^\[\]]*\])*\])*)\]\}\}"
     if_conditions = re.findall(if_pattern, message)
@@ -93,7 +94,7 @@ def format_message(data, template_str):
         message = message.replace(placeholder, str(value))
 
     # Replace \n in the template string
-    message = template_str.replace('\\n', '\n')
+    message = message.replace('\\n', '\n')
     
     return message.strip()  # Strip leading and trailing whitespace
 
