@@ -19,26 +19,18 @@ with open(CONFIG_FILE, 'r') as file:
     config = yaml.safe_load(file)
 
 def apply_filters(data, filters):
-    if 'and' in filters:
-        for f in filters['and']:
-            if not check_filter(data, f):
+    for f in filters:
+        keys = f['key'].split('.')
+        value = data
+        for key in keys:
+            value = value.get(key, None)
+            if value is None or value != f['value']:
+                continue
+            if 'discard' in f and f['discard']:
                 return False, None
-    if 'or' in filters:
-        for f in filters['or']:
-            if check_filter(data, f):
-                return True, f.get('format')
+            if 'format' in f:
+                return True, f['format']
     return True, None
-
-def check_filter(data, f):
-    keys = f['key'].split('.')
-    value = data
-    for key in keys:
-        value = value.get(key, None)
-        if value is None or value != f['value']:
-            return False
-    if 'discard' in f and f['discard']:
-        return False  # Discard the message
-    return True
 
 def format_message(data, format_str):
     data['raw_message'] = json.dumps(data)  # Add the raw message to the data
