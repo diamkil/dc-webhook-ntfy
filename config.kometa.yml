@@ -1,0 +1,136 @@
+topics:
+  kometa: # https://kometa.wiki/en/latest/config/webhooks
+    filters:
+      - and: # https://kometa.wiki/en/latest/config/webhooks/#global-json-payload
+        - key_not_defined: "library_name"
+        - key_not_defined: "collection"
+        - key_not_defined: "playlist"
+        - key: "event"
+          value: "error"
+          title: "An Error Occured"
+          format: |-
+            ## Critical: {{critical}}
+
+            {{error}}
+      - and: # https://kometa.wiki/en/latest/config/webhooks/#library-json-payload
+        - key_not_defined: "collection"
+        - key_not_defined: "playlist"
+        - key: "event"
+          value: "error"
+          title: "A Library Error Occured"
+          format: |-
+            ## Critical: {{critical}}
+            ## Server: {{server_name}}
+            ## Library: {{library_name}}
+            
+            {{error}}
+      - and: # https://kometa.wiki/en/latest/config/webhooks/#playlist-json-payload
+        - key: "playlist"
+        - key: "event"
+          value: "error"
+          title: "A Playlist Error Occured"
+          format: |-
+            ## Critical: {{critical}}
+            ## Server: {{server_name}}
+            ## Library: {{library_name}}
+            ## Playlist: {{playlist}}
+            
+            {{error}}
+      - and: # https://kometa.wiki/en/latest/config/webhooks/#collection-json-payload
+        - key: "collection"
+        - key: "event"
+          value: "error"
+          title: "A Collection Error Occured"
+          format: |-
+            ## Critical: {{critical}}
+            ## Server: {{server_name}}
+            ## Library: {{library_name}}
+            ## Collection: {{collection}}
+            
+            {{error}}
+      - and: # https://kometa.wiki/en/latest/config/webhooks/#delete-notifications
+        - key_not_defined: "library_name"
+        - key: "event"
+          value: "delete"
+          title: "Deleted Content"
+          format: |-
+            ## Server: {{server_name}}
+
+            {{message}}
+      - and: # https://kometa.wiki/en/latest/config/webhooks/#delete-notifications
+        - key: "library_name"
+        - key: "event"
+          value: "delete"
+          title: "Collection Deleted"
+          format: |-
+            ## Server: {{server_name}}
+            ## Library: {{library_name}}
+            
+            {{message}}
+      - and: # https://kometa.wiki/en/latest/config/webhooks/#delete-notifications
+        - key: "playlist"
+        - key: "event"
+          value: "changes"
+          title: "Changes made to playlist {{playlist}}"
+          format: |-
+            ## Server: {{server_name}}
+            ## Library: {{library_name}}
+
+            Created Now?: {{created}}
+
+            {{if additions: [## Additions: \n{{loop:item in additions:[ - {{item.title}} ]}} \n]}}
+            {{if removals: [## Removals: \n{{loop:item in removals:[ - {{item.title}} ]}} \n]}}
+            {{if radarr_adds: [## Radarr Adds: \n{{loop:item in radarr_adds:[ - {{item.title}} ]}} \n]}}
+            {{if sonarr_adds: [## Sonarr Adds: \n{{loop:item in sonarr_adds:[ - {{item.title}} ]}} \n]}}
+      - and: # https://kometa.wiki/en/latest/config/webhooks/#delete-notifications
+        - key: "collection"
+        - key: "event"
+          value: "changes"
+          title: "Changes made to collection {{collection}}"
+          format: |-
+            ## Server: {{server_name}}
+            ## Library: {{library_name}}
+
+            Created Now?: {{created}}
+
+            {{if additions: [## Additions: \n{{loop:item in additions:[ - {{item.title}} ]}} \n]}}
+            {{if removals: [## Removals: \n{{loop:item in removals:[ - {{item.title}} ]}} \n]}}
+            {{if radarr_adds: [## Radarr Adds: \n{{loop:item in radarr_adds:[ - {{item.title}} ]}} \n]}}
+            {{if sonarr_adds: [## Sonarr Adds: \n{{loop:item in sonarr_adds:[ - {{item.title}} ]}} \n]}}
+      - or:
+        - key: "event" # https://kometa.wiki/en/latest/config/webhooks/#version-notifications
+          value: "version"
+          title: "New version available!"
+          format: |-
+            Current version: {{current}}
+            Latest version: {{latest}}
+            
+            Release Notes: 
+            {{notes}}
+        - key: "event" # https://kometa.wiki/en/latest/config/webhooks/#run-start-notifications
+          value: "run_start"
+          title: "Kometa Run Starting!"
+          format: "Current time: {{start_time}}"
+        - key: "event" # https://kometa.wiki/en/latest/config/webhooks/#run-end-notifications
+          value: "run_end"
+          title: "Kometa Run Finished!"
+          format: |-
+            ## Time Stats
+            Start Time: {{start_time}}
+            End Time: {{end_time}}
+            Runtime: {{run_time}}
+
+            ## Collection Stats
+            Created: {{collections_created}}
+            Modified: {{collections_modified}}
+            Deleted: {{collections_deleted}}
+
+            ## Item Stats
+            Added: {{items_added}}
+            Removed: {{items_removed}}
+            Radarr Add: {{added_to_radarr}}
+            Sonarr Add: {{added_to_sonarr}}
+
+            ## Collections:
+            {{loop:item in names:[  Library: {{item.library}} \n  Name: {{item.name}}\n]}}
+    format: "{{raw_message}}"
